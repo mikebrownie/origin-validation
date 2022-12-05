@@ -8,57 +8,6 @@ use std::{cell::RefCell, rc::Rc};
 
 #[account]
 #[derive(Debug)]
-pub struct IanaAccount {
-    pub owner: Pubkey,
-    pub count_as: u32,
-    pub bump: u8,
-}
-
-impl<'info, 'entrypoint> IanaAccount {
-    pub fn load(
-        account: &'entrypoint mut Box<Account<'info, Self>>,
-        programs_map: &'entrypoint ProgramsMap<'info>,
-    ) -> Mutable<LoadedIanaAccount<'info, 'entrypoint>> {
-        let owner = account.owner.clone();
-        let count_as = account.count_as;
-        let bump = account.bump;
-
-        Mutable::new(LoadedIanaAccount {
-            __account__: account,
-            __programs__: programs_map,
-            owner,
-            count_as,
-            bump,
-        })
-    }
-
-    pub fn store(loaded: Mutable<LoadedIanaAccount>) {
-        let mut loaded = loaded.borrow_mut();
-        let owner = loaded.owner.clone();
-
-        loaded.__account__.owner = owner;
-
-        let count_as = loaded.count_as;
-
-        loaded.__account__.count_as = count_as;
-
-        let bump = loaded.bump;
-
-        loaded.__account__.bump = bump;
-    }
-}
-
-#[derive(Debug)]
-pub struct LoadedIanaAccount<'info, 'entrypoint> {
-    pub __account__: &'entrypoint mut Box<Account<'info, IanaAccount>>,
-    pub __programs__: &'entrypoint ProgramsMap<'info>,
-    pub owner: Pubkey,
-    pub count_as: u32,
-    pub bump: u8,
-}
-
-#[account]
-#[derive(Debug)]
 pub struct PrefixAccount {
     pub owner: Pubkey,
     pub prefix: u32,
@@ -112,6 +61,8 @@ pub struct LoadedPrefixAccount<'info, 'entrypoint> {
 #[derive(Debug)]
 pub struct AsAccount {
     pub owner: Pubkey,
+    pub count_prefix: u32,
+    pub prefix_keys: [Pubkey; 4],
     pub n: u32,
     pub bump: u8,
 }
@@ -122,6 +73,8 @@ impl<'info, 'entrypoint> AsAccount {
         programs_map: &'entrypoint ProgramsMap<'info>,
     ) -> Mutable<LoadedAsAccount<'info, 'entrypoint>> {
         let owner = account.owner.clone();
+        let count_prefix = account.count_prefix;
+        let prefix_keys = Mutable::new(account.prefix_keys.clone());
         let n = account.n;
         let bump = account.bump;
 
@@ -129,6 +82,8 @@ impl<'info, 'entrypoint> AsAccount {
             __account__: account,
             __programs__: programs_map,
             owner,
+            count_prefix,
+            prefix_keys,
             n,
             bump,
         })
@@ -139,6 +94,14 @@ impl<'info, 'entrypoint> AsAccount {
         let owner = loaded.owner.clone();
 
         loaded.__account__.owner = owner;
+
+        let count_prefix = loaded.count_prefix;
+
+        loaded.__account__.count_prefix = count_prefix;
+
+        let prefix_keys = loaded.prefix_keys.borrow().clone();
+
+        loaded.__account__.prefix_keys = prefix_keys;
 
         let n = loaded.n;
 
@@ -155,7 +118,68 @@ pub struct LoadedAsAccount<'info, 'entrypoint> {
     pub __account__: &'entrypoint mut Box<Account<'info, AsAccount>>,
     pub __programs__: &'entrypoint ProgramsMap<'info>,
     pub owner: Pubkey,
+    pub count_prefix: u32,
+    pub prefix_keys: Mutable<[Pubkey; 4]>,
     pub n: u32,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(Debug)]
+pub struct IanaAccount {
+    pub owner: Pubkey,
+    pub count_as: u32,
+    pub as_keys: [Pubkey; 4],
+    pub bump: u8,
+}
+
+impl<'info, 'entrypoint> IanaAccount {
+    pub fn load(
+        account: &'entrypoint mut Box<Account<'info, Self>>,
+        programs_map: &'entrypoint ProgramsMap<'info>,
+    ) -> Mutable<LoadedIanaAccount<'info, 'entrypoint>> {
+        let owner = account.owner.clone();
+        let count_as = account.count_as;
+        let as_keys = Mutable::new(account.as_keys.clone());
+        let bump = account.bump;
+
+        Mutable::new(LoadedIanaAccount {
+            __account__: account,
+            __programs__: programs_map,
+            owner,
+            count_as,
+            as_keys,
+            bump,
+        })
+    }
+
+    pub fn store(loaded: Mutable<LoadedIanaAccount>) {
+        let mut loaded = loaded.borrow_mut();
+        let owner = loaded.owner.clone();
+
+        loaded.__account__.owner = owner;
+
+        let count_as = loaded.count_as;
+
+        loaded.__account__.count_as = count_as;
+
+        let as_keys = loaded.as_keys.borrow().clone();
+
+        loaded.__account__.as_keys = as_keys;
+
+        let bump = loaded.bump;
+
+        loaded.__account__.bump = bump;
+    }
+}
+
+#[derive(Debug)]
+pub struct LoadedIanaAccount<'info, 'entrypoint> {
+    pub __account__: &'entrypoint mut Box<Account<'info, IanaAccount>>,
+    pub __programs__: &'entrypoint ProgramsMap<'info>,
+    pub owner: Pubkey,
+    pub count_as: u32,
+    pub as_keys: Mutable<[Pubkey; 4]>,
     pub bump: u8,
 }
 
@@ -182,6 +206,16 @@ pub fn init_prefix_handler<'info>(
 
     assign!(prefix_acct.borrow_mut().mask, ip_mask);
 
+    index_assign!(
+        _as.borrow().prefix_keys.borrow_mut(),
+        _as.borrow()
+            .prefix_keys
+            .wrapped_index((_as.borrow().count_prefix as i128)),
+        owner.key()
+    );
+
+    assign!(_as.borrow_mut().count_prefix, _as.borrow().count_prefix + 1);
+
     solana_program::msg!(
         "{} {} {} {}",
         "Added prefix/mask ",
@@ -200,6 +234,28 @@ pub fn init_iana_handler<'info>(
     assign!(iana_acct.borrow_mut().owner, owner.key());
 
     assign!(iana_acct.borrow_mut().count_as, 0);
+
+    assign!(
+        iana_acct.borrow_mut().as_keys,
+        Mutable::new(
+            <_ as TryInto<[_; 4]>>::try_into(
+                Mutable::new({
+                    let mut temp = vec![];
+
+                    for mut i in 0..4 {
+                        temp.push(owner.key());
+                    }
+
+                    temp
+                })
+                .borrow()
+                .iter()
+                .map(|elem| elem.clone())
+                .collect::<Vec<_>>()
+            )
+            .unwrap()
+        )
+    );
 
     assign!(iana_acct.borrow_mut().bump, iana.bump.unwrap());
 }
@@ -220,6 +276,38 @@ pub fn init_as_handler<'info>(
     assign!(as_acct.borrow_mut().owner, owner.key());
 
     assign!(as_acct.borrow_mut().bump, _as.bump.unwrap());
+
+    assign!(
+        as_acct.borrow_mut().prefix_keys,
+        Mutable::new(
+            <_ as TryInto<[_; 4]>>::try_into(
+                Mutable::new({
+                    let mut temp = vec![];
+
+                    for mut i in 0..4 {
+                        temp.push(owner.key());
+                    }
+
+                    temp
+                })
+                .borrow()
+                .iter()
+                .map(|elem| elem.clone())
+                .collect::<Vec<_>>()
+            )
+            .unwrap()
+        )
+    );
+
+    assign!(as_acct.borrow_mut().count_prefix, 0);
+
+    index_assign!(
+        iana.borrow().as_keys.borrow_mut(),
+        iana.borrow()
+            .as_keys
+            .wrapped_index((iana.borrow().count_as as i128)),
+        owner.key()
+    );
 
     solana_program::msg!("{} {}", "Added ASN #", iana.borrow().count_as);
 

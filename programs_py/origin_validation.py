@@ -13,10 +13,13 @@ declare_id('7n4AUGyiAbCwv3F6GKyJAPAS9KCbDb3QKYsgHcPCPnFP');
 class IanaAccount(Account):
     owner: Pubkey
     count_as: u32
+    as_keys: Array[Pubkey, 4]
     bump: u8
 
 class AsAccount(Account):
     owner: Pubkey
+    count_prefix: u32
+    prefix_keys: Array[Pubkey, 4]
     n: u32
     bump: u8
 
@@ -25,15 +28,15 @@ class PrefixAccount(Account):
     prefix: u32
     mask: u8
  
-
 # Here we define all our instructions, each of the method below as an RPC end point which can be invoked by clients.
 @instruction
 def init_iana(owner: Signer, iana: Empty[IanaAccount]):
     # As a new user connects, we create a new IANA account for him and intialize the account.
-    iana_acct = iana.init(payer=owner, seeds=["iana-account", owner])
+    iana_acct = iana.init(payer=owner, seeds=["iana-account", owner], padding=4096)
     # Assign the owner or the Signer of the one initialize the accouunt to the user's newly created VoteAccount owner.
     iana_acct.owner = owner.key()
     iana_acct.count_as = 0
+    iana_acct.as_keys = Array([owner.key() for i in range(4)], 4)
     # Retrieve the bump seed used to create the PDA.
     iana_acct.bump = iana.bump()
 
@@ -46,6 +49,9 @@ def init_as(owner: Signer, iana: IanaAccount, _as: Empty[AsAccount]):
     as_acct.n = iana.count_as
     as_acct.owner = owner.key()
     as_acct.bump = _as.bump()
+    as_acct.prefix_keys = Array([owner.key() for i in range(4)], 4)
+    as_acct.count_prefix = 0
+    iana.as_keys[iana.count_as] = owner.key()
     print("Added ASN #", iana.count_as)
     iana.count_as += 1
 
@@ -59,7 +65,10 @@ ip_prefix: u32, ip_mask: u8):
     prefix_acct.owner = _as.key()
     prefix_acct.prefix = ip_prefix
     prefix_acct.mask = ip_mask
+    _as.prefix_keys[_as.count_prefix] = owner.key()
+    _as.count_prefix += 1
     print("Added prefix/mask ", prefix_acct.prefix, "/", prefix_acct.mask)
 
-# @instruction
-# def get_prefix_owner(owner: Signer, _as: AsAccount, ip_prefix: u32, ip_mask: u8):
+@instruction
+def get_prefix_owner(owner: Signer, iana: IanaAccount, ip_prefix: u32, ip_mask: u8):
+    iana.

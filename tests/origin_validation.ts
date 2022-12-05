@@ -37,10 +37,18 @@ describe("origin_validation", async () => {
     await program.methods.initAs().accounts({ owner, iana, as }).rpc()
   })
 
-    // Try initializing a prefix
-    it('Inits a prefix', async () => {
-      // add 10.0.0.1 / 16
-      await program.methods.initPrefix(167772161, 16).accounts({ owner, iana, as, prefix }).rpc()
-    })
+  // Try initializing a prefix
+  it('Inits a prefix', async () => {
+    // add 10.0.0.1/16 for AS 0
+    let ip_prefix = 167772161
+    let ip_mask = 16
+    await program.methods.initPrefix(ip_prefix, ip_mask).accounts({ owner, iana, as, prefix }).rpc()
+  })
+
+  // it('Get ASN from prefix', async () => {
+  //   let ip_prefix = 167772161
+  //   let ip_mask = 16
+  //   program.views.initAs
+  // })
 
 });

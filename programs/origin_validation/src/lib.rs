@@ -160,8 +160,8 @@ mod origin_validation {
         pub _as: Box<Account<'info, dot::program::AsAccount>>,
         # [account (init , space = std :: mem :: size_of :: < dot :: program :: PrefixAccount > () + 8 , payer = owner , seeds = ["prefix-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
         pub prefix: Box<Account<'info, dot::program::PrefixAccount>>,
-        pub rent: Sysvar<'info, Rent>,
         pub system_program: Program<'info, System>,
+        pub rent: Sysvar<'info, Rent>,
     }
 
     pub fn init_prefix(ctx: Context<InitPrefix>, ip_prefix: u32, ip_mask: u8) -> Result<()> {
@@ -207,7 +207,7 @@ mod origin_validation {
     pub struct InitIana<'info> {
         #[account(mut)]
         pub owner: Signer<'info>,
-        # [account (init , space = std :: mem :: size_of :: < dot :: program :: IanaAccount > () + 8 , payer = owner , seeds = ["iana-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
+        # [account (init , space = std :: mem :: size_of :: < dot :: program :: IanaAccount > () + 8 + (4096 as usize) , payer = owner , seeds = ["iana-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
         pub iana: Box<Account<'info, dot::program::IanaAccount>>,
         pub system_program: Program<'info, System>,
         pub rent: Sysvar<'info, Rent>,
