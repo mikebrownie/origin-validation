@@ -61,40 +61,5 @@ ip_prefix: u32, ip_mask: u8):
     prefix_acct.mask = ip_mask
     print("Added prefix/mask ", prefix_acct.prefix, "/", prefix_acct.mask)
 
-@instruction
-def get_prefix_owner(owner: Signer, _as: AsAccount, ip_prefix: u32, ip_mask: u8):
-
 # @instruction
-# def add_route(owner: Signer, iana: IanaAccount, _as: AsAccount, prefix: u32, mask: u8):
-#     assert owner.key() == iana.owner, "This is not your Iana account!"
-#     # Assign ASN
-#     as_acct = _as.init(payer=owner, seeds=["asn-account", owner])
-#     # Retrieve the bump seed used to create the PDA.
-#     as_acct.n = asn
-#     as_acct.bump = _as.bump()
-#     print("Added ASN #", iana.count_asn)
-
-# @instruction
-# def init_prefix(owner: Signer, iana: IanaAccount, asn: u16}):
-#     # Check if the public key of the signer is the same as the owner in the iana account.
-#     # assert owner.key() == iana.owner, "This is not your Iana account!"
-  
-#   @instruction
-# def init_asn(owner: Signer, iana: IanaAccount, asn: u16}):
-#     # Check if the public key of the signer is the same as the owner in the iana account.
-#     # assert owner.key() == iana.owner, "This is not your Iana account!"
-  
-# To vote smooth
-# @instruction
-# def add_prefix(owner: Signer, iana: IanaAccount,  ):
-#     # Check if the public key of the signer is the same as the owner in the vote account.
-#     assert owner.key() == iana.owner, "This is not your Iana account!"
-#     # Increment the smooth variable in the user's VoteAccount
-
-  
-# class Route(Account):
-#   owner: Pubkey
-#   # Ip address prefix
-#   prefix: u8
-#   mask: u8
-
+# def get_prefix_owner(owner: Signer, _as: AsAccount, ip_prefix: u32, ip_mask: u8):
