@@ -16,45 +16,31 @@ describe("origin_validation", async () => {
     [Buffer.from('iana-account'), owner.toBuffer()],
     program.programId
   )[0]
+
+  const as = web3.PublicKey.findProgramAddressSync(
+    [Buffer.from('as-account'), owner.toBuffer()],
+    program.programId
+  )[0]
+
+  const prefix = web3.PublicKey.findProgramAddressSync(
+    [Buffer.from('prefix-account'), owner.toBuffer()],
+    program.programId
+  )[0]
   
   // Try initializing IANA
   it('Inits IANA account', async () => {
     await program.methods.initIana().accounts({ owner, iana }).rpc()
   })
 
-  // // Try initializing IANA and then AS
-  // it('Inits IANA account', async () => {
-  //   await program.methods.initIana().accounts({ owner, iana }).rpc()
-  // })
+  // Try initializing an AS
+  it('Inits AS account', async () => {
+    await program.methods.initAs().accounts({ owner, iana, as }).rpc()
+  })
 
-
-  // it("Is initialized!", async () => {
-  //   // Add your test here.
-  //   const tx = await program.methods.initialize().rpc();
-  //   console.log("Your transaction signature", tx);
-  // });
-  
-  // it("init", async () => {
-  //   // Send transaction
-  //   let ianaAcc = new web3.Keypair()
-  //   const txHash = await program.methods
-  //     .initIana()
-  //     .accounts({
-  //       iana: ianaAcc.publicKey,
-  //       owner: ianaAcc.publicKey,
-  //       systemProgram: web3.SystemProgram.programId,
-  //     })
-  //     .rpc();
-  //   console.log(`Use 'solana confirm -v ${txHash}' to see the logs`);
-  //   // Confirm transaction
-  //   await OriginValidation.connection.confirmTransaction(txHash);
-
-  //   // Fetch the created account
-  //   const ianaAccount = await program.account.iana.fetch(ianaAccountPk);
-
-  //   // console.log("Fizz:", ianaAccount.fizz);
-  //   // console.log("Buzz:", ianaAccount.buzz);
-  //   // console.log("N:", ianaAccount.n.toString());
-  // });
+    // Try initializing a prefix
+    it('Inits a prefix', async () => {
+      // add 10.0.0.1 / 16
+      await program.methods.initPrefix(167772161, 16).accounts({ owner, iana, as, prefix }).rpc()
+    })
 
 });

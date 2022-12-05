@@ -12,18 +12,18 @@ declare_id('7n4AUGyiAbCwv3F6GKyJAPAS9KCbDb3QKYsgHcPCPnFP');
 # Defining the account which will be stored on-chain for every unique wallet interacting with our program.
 class IanaAccount(Account):
     owner: Pubkey
-    # asn_keys: Array[Pubkey, 64] # 32 bytes public-key * 65536 (or 2^16) possible ASNs
-    count_asn: u8 # Total number of ASNs added
+    count_as: u32
     bump: u8
 
 class AsAccount(Account):
-  authority: Pubkey
-  owner: Pubkey
-  n: u32
-  prefix: u8
-  mask: u8
-  bump: u8
+    owner: Pubkey
+    n: u32
+    bump: u8
 
+class PrefixAccount(Account):
+    owner: Pubkey
+    prefix: u32
+    mask: u8
  
 
 # Here we define all our instructions, each of the method below as an RPC end point which can be invoked by clients.
@@ -33,31 +33,46 @@ def init_iana(owner: Signer, iana: Empty[IanaAccount]):
     iana_acct = iana.init(payer=owner, seeds=["iana-account", owner])
     # Assign the owner or the Signer of the one initialize the accouunt to the user's newly created VoteAccount owner.
     iana_acct.owner = owner.key()
-    iana_acct.count_asn = 0
-    # asn_keys = []
-    # a = Pubkey
-    # for i in range(64):
-    #     asn_keys.append(a)
-
-    # iana_acct.asn_keys = Array(u32, 64)
+    iana_acct.count_as = 0
     # Retrieve the bump seed used to create the PDA.
     iana_acct.bump = iana.bump()
-  
+
 # Called to add a new asn. Allowed if the caller is Iana
+@instruction
+def init_as(owner: Signer, iana: IanaAccount, _as: Empty[AsAccount]):
+    assert owner.key() == iana.owner, "You aren't IANA"
+    # Assign ASN
+    as_acct = _as.init(payer=owner, seeds=["as-account", owner])
+    as_acct.n = iana.count_as
+    as_acct.owner = owner.key()
+    as_acct.bump = _as.bump()
+    print("Added ASN #", iana.count_as)
+    iana.count_as += 1
+
+# Only Iana can add prefix -
+# TODO: should be a msg signed by both iana and AS
+@instruction
+def init_prefix(owner: Signer, iana: IanaAccount, _as: AsAccount, prefix: Empty[PrefixAccount], 
+ip_prefix: u32, ip_mask: u8):
+    assert owner.key() == iana.owner, "You aren't IANA"
+    prefix_acct = prefix.init(payer=owner, seeds=["prefix-account", owner])
+    prefix_acct.owner = _as.key()
+    prefix_acct.prefix = ip_prefix
+    prefix_acct.mask = ip_mask
+    print("Added prefix/mask ", prefix_acct.prefix, "/", prefix_acct.mask)
+
+@instruction
+def get_prefix_owner(owner: Signer, _as: AsAccount, ip_prefix: u32, ip_mask: u8):
+
 # @instruction
-# def init_asn(owner: Signer, iana: IanaAccount, _as: Empty[AsAccount], asn: u32):
-#     # Check if the public key of the signer is the same as the owner in the iana account.
+# def add_route(owner: Signer, iana: IanaAccount, _as: AsAccount, prefix: u32, mask: u8):
 #     assert owner.key() == iana.owner, "This is not your Iana account!"
 #     # Assign ASN
-#     iana.asn_keys[iana.count_asn] = owner.key()
-#     print("Added ASN #", iana.count_asn)
-#     iana.count_asn += 1
-
-#     as_acct = _as.init(payer=owner, seeds=["Asn", owner])
+#     as_acct = _as.init(payer=owner, seeds=["asn-account", owner])
 #     # Retrieve the bump seed used to create the PDA.
 #     as_acct.n = asn
 #     as_acct.bump = _as.bump()
-#     owner
+#     print("Added ASN #", iana.count_asn)
 
 # @instruction
 # def init_prefix(owner: Signer, iana: IanaAccount, asn: u16}):
@@ -83,6 +98,3 @@ def init_iana(owner: Signer, iana: Empty[IanaAccount]):
 #   prefix: u8
 #   mask: u8
 
-# class AsnMap:
-  
-  
