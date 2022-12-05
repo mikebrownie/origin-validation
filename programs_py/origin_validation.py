@@ -61,4 +61,3 @@ ip_prefix: u32, ip_mask: u8):
     prefix_acct.prefix = ip_prefix
     prefix_acct.mask= ip_mask]
     print("Added prefix/mask ", prefix_acct.prefix, "/", prefix_acct.mask)
-åå
