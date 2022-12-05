@@ -1,7 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { web3 } from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { getMultipleAccounts } from "@project-serum/anchor/dist/cjs/utils/rpc";
 import { OriginValidation } from "../target/types/origin_validation";
 
 describe("origin_validation", async () => {
