@@ -150,47 +150,6 @@ mod origin_validation {
     use std::collections::HashMap;
 
     #[derive(Accounts)]
-    pub struct InitAs<'info> {
-        #[account(mut)]
-        pub owner: Signer<'info>,
-        #[account(mut)]
-        pub iana: Box<Account<'info, dot::program::IanaAccount>>,
-        # [account (init , space = std :: mem :: size_of :: < dot :: program :: AsAccount > () + 8 , payer = owner , seeds = ["as-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
-        pub _as: Box<Account<'info, dot::program::AsAccount>>,
-        pub rent: Sysvar<'info, Rent>,
-        pub system_program: Program<'info, System>,
-    }
-
-    pub fn init_as(ctx: Context<InitAs>) -> Result<()> {
-        let mut programs = HashMap::new();
-
-        programs.insert(
-            "system_program",
-            ctx.accounts.system_program.to_account_info(),
-        );
-
-        let programs_map = ProgramsMap(programs);
-        let owner = SeahorseSigner {
-            account: &ctx.accounts.owner,
-            programs: &programs_map,
-        };
-
-        let iana = dot::program::IanaAccount::load(&mut ctx.accounts.iana, &programs_map);
-        let _as = Empty {
-            account: dot::program::AsAccount::load(&mut ctx.accounts._as, &programs_map),
-            bump: ctx.bumps.get("_as").map(|bump| *bump),
-        };
-
-        init_as_handler(owner.clone(), iana.clone(), _as.clone());
-
-        dot::program::IanaAccount::store(iana);
-
-        dot::program::AsAccount::store(_as.account);
-
-        return Ok(());
-    }
-
-    #[derive(Accounts)]
     # [instruction (ip_prefix : u32 , ip_mask : u8)]
     pub struct InitPrefix<'info> {
         #[account(mut)]
@@ -201,8 +160,8 @@ mod origin_validation {
         pub _as: Box<Account<'info, dot::program::AsAccount>>,
         # [account (init , space = std :: mem :: size_of :: < dot :: program :: PrefixAccount > () + 8 , payer = owner , seeds = ["prefix-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
         pub prefix: Box<Account<'info, dot::program::PrefixAccount>>,
-        pub system_program: Program<'info, System>,
         pub rent: Sysvar<'info, Rent>,
+        pub system_program: Program<'info, System>,
     }
 
     pub fn init_prefix(ctx: Context<InitPrefix>, ip_prefix: u32, ip_mask: u8) -> Result<()> {
@@ -250,8 +209,8 @@ mod origin_validation {
         pub owner: Signer<'info>,
         # [account (init , space = 4096 as usize , payer = owner , seeds = ["iana-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
         pub iana: Box<Account<'info, dot::program::IanaAccount>>,
-        pub rent: Sysvar<'info, Rent>,
         pub system_program: Program<'info, System>,
+        pub rent: Sysvar<'info, Rent>,
     }
 
     pub fn init_iana(ctx: Context<InitIana>) -> Result<()> {
@@ -276,6 +235,47 @@ mod origin_validation {
         init_iana_handler(owner.clone(), iana.clone());
 
         dot::program::IanaAccount::store(iana.account);
+
+        return Ok(());
+    }
+
+    #[derive(Accounts)]
+    pub struct InitAs<'info> {
+        #[account(mut)]
+        pub owner: Signer<'info>,
+        #[account(mut)]
+        pub iana: Box<Account<'info, dot::program::IanaAccount>>,
+        # [account (init , space = std :: mem :: size_of :: < dot :: program :: AsAccount > () + 8 , payer = owner , seeds = ["as-account" . as_bytes () . as_ref () , owner . key () . as_ref ()] , bump)]
+        pub _as: Box<Account<'info, dot::program::AsAccount>>,
+        pub rent: Sysvar<'info, Rent>,
+        pub system_program: Program<'info, System>,
+    }
+
+    pub fn init_as(ctx: Context<InitAs>) -> Result<()> {
+        let mut programs = HashMap::new();
+
+        programs.insert(
+            "system_program",
+            ctx.accounts.system_program.to_account_info(),
+        );
+
+        let programs_map = ProgramsMap(programs);
+        let owner = SeahorseSigner {
+            account: &ctx.accounts.owner,
+            programs: &programs_map,
+        };
+
+        let iana = dot::program::IanaAccount::load(&mut ctx.accounts.iana, &programs_map);
+        let _as = Empty {
+            account: dot::program::AsAccount::load(&mut ctx.accounts._as, &programs_map),
+            bump: ctx.bumps.get("_as").map(|bump| *bump),
+        };
+
+        init_as_handler(owner.clone(), iana.clone(), _as.clone());
+
+        dot::program::IanaAccount::store(iana);
+
+        dot::program::AsAccount::store(_as.account);
 
         return Ok(());
     }

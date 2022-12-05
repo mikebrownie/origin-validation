@@ -11,21 +11,21 @@ from seahorse.prelude import *
 declare_id('7n4AUGyiAbCwv3F6GKyJAPAS9KCbDb3QKYsgHcPCPnFP');
 
 
-# class Prefix:
-#     owner: Pubkey
-#     prefix: u32
-#     mask: u8
-#     def __init__(self, owner: Pubkey, prefix: u32, mask: u8):
-#         self.owner = owner
-#         self.prefix = prefix
-#         self.mask = mask
+class Prefix:
+    owner: Pubkey
+    prefix: u32
+    mask: u8
+    def __init__(self, owner: Pubkey, prefix: u32, mask: u8):
+        self.owner = owner
+        self.prefix = prefix
+        self.mask = mask
 
 # Defining the account which will be stored on-chain for every unique wallet interacting with our program.
 class IanaAccount(Account):
     owner: Pubkey
     count_as: u32
     as_keys: Array[Pubkey, 4]
-    # prefix_as_map: Array[Prefix, 1]
+    prefix_as_map: Array[Prefix, 1]
     bump: u8
 
 class AsAccount(Account):
@@ -74,8 +74,8 @@ ip_prefix: u32, ip_mask: u8):
     prefix_acct.owner = _as.key()
     prefix_acct.prefix = ip_prefix
     prefix_acct.mask= ip_mask
-    # p = Prefix(_as.key(), ip_prefix, ip_mask)
-    # iana.prefix_as_map[_as.n] = p
+    p = Prefix(_as.key(), ip_prefix, ip_mask)
+    iana.prefix_as_map[_as.n] = p
     print("Added prefix/mask ", prefix_acct.prefix, "/", prefix_acct.mask)
 
 # @instruction
