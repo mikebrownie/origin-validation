@@ -8,124 +8,6 @@ use std::{cell::RefCell, rc::Rc};
 
 #[account]
 #[derive(Debug)]
-pub struct PrefixAccount {
-    pub owner: Pubkey,
-    pub prefix: u32,
-    pub mask: u8,
-}
-
-impl<'info, 'entrypoint> PrefixAccount {
-    pub fn load(
-        account: &'entrypoint mut Box<Account<'info, Self>>,
-        programs_map: &'entrypoint ProgramsMap<'info>,
-    ) -> Mutable<LoadedPrefixAccount<'info, 'entrypoint>> {
-        let owner = account.owner.clone();
-        let prefix = account.prefix;
-        let mask = account.mask;
-
-        Mutable::new(LoadedPrefixAccount {
-            __account__: account,
-            __programs__: programs_map,
-            owner,
-            prefix,
-            mask,
-        })
-    }
-
-    pub fn store(loaded: Mutable<LoadedPrefixAccount>) {
-        let mut loaded = loaded.borrow_mut();
-        let owner = loaded.owner.clone();
-
-        loaded.__account__.owner = owner;
-
-        let prefix = loaded.prefix;
-
-        loaded.__account__.prefix = prefix;
-
-        let mask = loaded.mask;
-
-        loaded.__account__.mask = mask;
-    }
-}
-
-#[derive(Debug)]
-pub struct LoadedPrefixAccount<'info, 'entrypoint> {
-    pub __account__: &'entrypoint mut Box<Account<'info, PrefixAccount>>,
-    pub __programs__: &'entrypoint ProgramsMap<'info>,
-    pub owner: Pubkey,
-    pub prefix: u32,
-    pub mask: u8,
-}
-
-#[account]
-#[derive(Debug)]
-pub struct AsAccount {
-    pub owner: Pubkey,
-    pub count_prefix: u32,
-    pub prefix_keys: [Pubkey; 4],
-    pub n: u32,
-    pub bump: u8,
-}
-
-impl<'info, 'entrypoint> AsAccount {
-    pub fn load(
-        account: &'entrypoint mut Box<Account<'info, Self>>,
-        programs_map: &'entrypoint ProgramsMap<'info>,
-    ) -> Mutable<LoadedAsAccount<'info, 'entrypoint>> {
-        let owner = account.owner.clone();
-        let count_prefix = account.count_prefix;
-        let prefix_keys = Mutable::new(account.prefix_keys.clone());
-        let n = account.n;
-        let bump = account.bump;
-
-        Mutable::new(LoadedAsAccount {
-            __account__: account,
-            __programs__: programs_map,
-            owner,
-            count_prefix,
-            prefix_keys,
-            n,
-            bump,
-        })
-    }
-
-    pub fn store(loaded: Mutable<LoadedAsAccount>) {
-        let mut loaded = loaded.borrow_mut();
-        let owner = loaded.owner.clone();
-
-        loaded.__account__.owner = owner;
-
-        let count_prefix = loaded.count_prefix;
-
-        loaded.__account__.count_prefix = count_prefix;
-
-        let prefix_keys = loaded.prefix_keys.borrow().clone();
-
-        loaded.__account__.prefix_keys = prefix_keys;
-
-        let n = loaded.n;
-
-        loaded.__account__.n = n;
-
-        let bump = loaded.bump;
-
-        loaded.__account__.bump = bump;
-    }
-}
-
-#[derive(Debug)]
-pub struct LoadedAsAccount<'info, 'entrypoint> {
-    pub __account__: &'entrypoint mut Box<Account<'info, AsAccount>>,
-    pub __programs__: &'entrypoint ProgramsMap<'info>,
-    pub owner: Pubkey,
-    pub count_prefix: u32,
-    pub prefix_keys: Mutable<[Pubkey; 4]>,
-    pub n: u32,
-    pub bump: u8,
-}
-
-#[account]
-#[derive(Debug)]
 pub struct IanaAccount {
     pub owner: Pubkey,
     pub count_as: u32,
@@ -183,6 +65,138 @@ pub struct LoadedIanaAccount<'info, 'entrypoint> {
     pub bump: u8,
 }
 
+#[account]
+#[derive(Debug)]
+pub struct AsAccount {
+    pub owner: Pubkey,
+    pub n: u32,
+    pub bump: u8,
+}
+
+impl<'info, 'entrypoint> AsAccount {
+    pub fn load(
+        account: &'entrypoint mut Box<Account<'info, Self>>,
+        programs_map: &'entrypoint ProgramsMap<'info>,
+    ) -> Mutable<LoadedAsAccount<'info, 'entrypoint>> {
+        let owner = account.owner.clone();
+        let n = account.n;
+        let bump = account.bump;
+
+        Mutable::new(LoadedAsAccount {
+            __account__: account,
+            __programs__: programs_map,
+            owner,
+            n,
+            bump,
+        })
+    }
+
+    pub fn store(loaded: Mutable<LoadedAsAccount>) {
+        let mut loaded = loaded.borrow_mut();
+        let owner = loaded.owner.clone();
+
+        loaded.__account__.owner = owner;
+
+        let n = loaded.n;
+
+        loaded.__account__.n = n;
+
+        let bump = loaded.bump;
+
+        loaded.__account__.bump = bump;
+    }
+}
+
+#[derive(Debug)]
+pub struct LoadedAsAccount<'info, 'entrypoint> {
+    pub __account__: &'entrypoint mut Box<Account<'info, AsAccount>>,
+    pub __programs__: &'entrypoint ProgramsMap<'info>,
+    pub owner: Pubkey,
+    pub n: u32,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(Debug)]
+pub struct PrefixAccount {
+    pub owner: Pubkey,
+    pub prefix: u32,
+    pub mask: u8,
+}
+
+impl<'info, 'entrypoint> PrefixAccount {
+    pub fn load(
+        account: &'entrypoint mut Box<Account<'info, Self>>,
+        programs_map: &'entrypoint ProgramsMap<'info>,
+    ) -> Mutable<LoadedPrefixAccount<'info, 'entrypoint>> {
+        let owner = account.owner.clone();
+        let prefix = account.prefix;
+        let mask = account.mask;
+
+        Mutable::new(LoadedPrefixAccount {
+            __account__: account,
+            __programs__: programs_map,
+            owner,
+            prefix,
+            mask,
+        })
+    }
+
+    pub fn store(loaded: Mutable<LoadedPrefixAccount>) {
+        let mut loaded = loaded.borrow_mut();
+        let owner = loaded.owner.clone();
+
+        loaded.__account__.owner = owner;
+
+        let prefix = loaded.prefix;
+
+        loaded.__account__.prefix = prefix;
+
+        let mask = loaded.mask;
+
+        loaded.__account__.mask = mask;
+    }
+}
+
+#[derive(Debug)]
+pub struct LoadedPrefixAccount<'info, 'entrypoint> {
+    pub __account__: &'entrypoint mut Box<Account<'info, PrefixAccount>>,
+    pub __programs__: &'entrypoint ProgramsMap<'info>,
+    pub owner: Pubkey,
+    pub prefix: u32,
+    pub mask: u8,
+}
+
+pub fn init_as_handler<'info>(
+    mut owner: SeahorseSigner<'info, '_>,
+    mut iana: Mutable<LoadedIanaAccount<'info, '_>>,
+    mut _as: Empty<Mutable<LoadedAsAccount<'info, '_>>>,
+) -> () {
+    if !(owner.key() == iana.borrow().owner) {
+        panic!("You aren't IANA");
+    }
+
+    let mut as_acct = _as.account.clone();
+
+    assign!(as_acct.borrow_mut().n, iana.borrow().count_as);
+
+    assign!(as_acct.borrow_mut().owner, owner.key());
+
+    assign!(as_acct.borrow_mut().bump, _as.bump.unwrap());
+
+    index_assign!(
+        iana.borrow().as_keys.borrow_mut(),
+        iana.borrow()
+            .as_keys
+            .wrapped_index((iana.borrow().count_as as i128)),
+        owner.key()
+    );
+
+    solana_program::msg!("{} {}", "Added ASN #", iana.borrow().count_as);
+
+    assign!(iana.borrow_mut().count_as, iana.borrow().count_as + 1);
+}
+
 pub fn init_prefix_handler<'info>(
     mut owner: SeahorseSigner<'info, '_>,
     mut iana: Mutable<LoadedIanaAccount<'info, '_>>,
@@ -205,16 +219,6 @@ pub fn init_prefix_handler<'info>(
     assign!(prefix_acct.borrow_mut().prefix, ip_prefix);
 
     assign!(prefix_acct.borrow_mut().mask, ip_mask);
-
-    index_assign!(
-        _as.borrow().prefix_keys.borrow_mut(),
-        _as.borrow()
-            .prefix_keys
-            .wrapped_index((_as.borrow().count_prefix as i128)),
-        owner.key()
-    );
-
-    assign!(_as.borrow_mut().count_prefix, _as.borrow().count_prefix + 1);
 
     solana_program::msg!(
         "{} {} {} {}",
@@ -258,58 +262,4 @@ pub fn init_iana_handler<'info>(
     );
 
     assign!(iana_acct.borrow_mut().bump, iana.bump.unwrap());
-}
-
-pub fn init_as_handler<'info>(
-    mut owner: SeahorseSigner<'info, '_>,
-    mut iana: Mutable<LoadedIanaAccount<'info, '_>>,
-    mut _as: Empty<Mutable<LoadedAsAccount<'info, '_>>>,
-) -> () {
-    if !(owner.key() == iana.borrow().owner) {
-        panic!("You aren't IANA");
-    }
-
-    let mut as_acct = _as.account.clone();
-
-    assign!(as_acct.borrow_mut().n, iana.borrow().count_as);
-
-    assign!(as_acct.borrow_mut().owner, owner.key());
-
-    assign!(as_acct.borrow_mut().bump, _as.bump.unwrap());
-
-    assign!(
-        as_acct.borrow_mut().prefix_keys,
-        Mutable::new(
-            <_ as TryInto<[_; 4]>>::try_into(
-                Mutable::new({
-                    let mut temp = vec![];
-
-                    for mut i in 0..4 {
-                        temp.push(owner.key());
-                    }
-
-                    temp
-                })
-                .borrow()
-                .iter()
-                .map(|elem| elem.clone())
-                .collect::<Vec<_>>()
-            )
-            .unwrap()
-        )
-    );
-
-    assign!(as_acct.borrow_mut().count_prefix, 0);
-
-    index_assign!(
-        iana.borrow().as_keys.borrow_mut(),
-        iana.borrow()
-            .as_keys
-            .wrapped_index((iana.borrow().count_as as i128)),
-        owner.key()
-    );
-
-    solana_program::msg!("{} {}", "Added ASN #", iana.borrow().count_as);
-
-    assign!(iana.borrow_mut().count_as, iana.borrow().count_as + 1);
 }

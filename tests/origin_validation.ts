@@ -1,6 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { web3 } from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
+import { getMultipleAccounts } from "@project-serum/anchor/dist/cjs/utils/rpc";
 import { OriginValidation } from "../target/types/origin_validation";
 
 describe("origin_validation", async () => {
@@ -43,12 +44,14 @@ describe("origin_validation", async () => {
     let ip_prefix = 167772161
     let ip_mask = 16
     await program.methods.initPrefix(ip_prefix, ip_mask).accounts({ owner, iana, as, prefix }).rpc()
+    program.views.initAs
   })
 
-  // it('Get ASN from prefix', async () => {
-  //   let ip_prefix = 167772161
-  //   let ip_mask = 16
-  //   program.views.initAs
-  // })
+  it('Get ASN from prefix', async () => {
+    let ip_prefix = 167772161
+    let ip_mask = 16
+    
+    // program.views.initAs
+  })
 
 });
